@@ -10,13 +10,18 @@
 class RTSPNode : public Node {
 public:
     RTSPNode() = default;
-    ~RTSPNode() = default;
 
-    bool Init();
+    ~RTSPNode() override = default;
 
-    bool Run();
+    bool Init(const Json::Value& config) override;
 
-    void Release();
+    bool Run() override;
+
+    void Release() override;
+
+private:
+    std::string m_rtsp_url;
 };
+
 
 #endif //AX_BOX_RTSPNODE_H
