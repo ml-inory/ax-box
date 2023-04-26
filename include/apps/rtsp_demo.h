@@ -15,8 +15,6 @@ public:
     ~RTSPDemo() override = default;
 
     bool Init(const Json::Value& config) override;
-
-    bool Run() override;
 };
 
 #endif //AX_BOX_RTSP_DEMO_H
