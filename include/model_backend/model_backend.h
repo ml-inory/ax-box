@@ -17,7 +17,7 @@ public:
 
     virtual bool Init(const std::string& model_path) = 0;
 
-    virtual bool Run(const cv::Mat& img, std::vector<Blob>& outputs)
+    virtual bool Run(const cv::Mat& img, std::vector<Blob>& outputs) = 0;
 };
 
 #endif //AX_BOX_MODEL_BACKEND_H

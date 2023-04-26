@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 3.0 FATAL_ERROR)
 
 project(ax-box CXX)
+set (CMAKE_CXX_STANDARD 11)
 
 set(3RDLIB_ROOT ${CMAKE_SOURCE_DIR}/3rdlibs)
 
@@ -27,7 +28,6 @@ target_link_directories(${PROJECT_NAME} PUBLIC ${3RDLIB_ROOT}/opencv/lib)
 list(APPEND OPENCV_LIBS
         opencv_core opencv_imgproc opencv_imgcodecs)
 
-message(STATUS ${FFMPEG_LIBS})
 target_link_libraries(${PROJECT_NAME} PUBLIC
         ${GLOG_LIBS}
         ${JSONCPP_LIBS}

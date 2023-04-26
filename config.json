@@ -1,4 +1,4 @@
 {
-  "rtsp_url": "10.153.129.211.avi",
+  "rtsp_url": "10.153.129.209.mp4",
   "rtmp_url": "rtmp://localhost:1935/live/test"
 }

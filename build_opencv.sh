@@ -7,7 +7,7 @@ fi
 
 # opencv
 cd ${SRC}
-git clone https://gitee.com/opencv/opencv.git opencv -b 3.4.12 --depth=1
+git clone https://github.com/opencv/opencv.git opencv -b 3.4.12 --depth=1
 cd opencv
 mkdir -p build
 cd build

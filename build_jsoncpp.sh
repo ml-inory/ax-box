@@ -11,7 +11,7 @@ git clone https://github.com/open-source-parsers/jsoncpp.git jsoncpp -b 1.9.5 --
 cd jsoncpp
 mkdir -p build
 cd build
-cmake .. -DCMAKE_INSTALL_PREFIX=./install -DJSONCPP_WITH_TESTS=OFF -DJSONCPP_WITH_POST_BUILD_UNITTEST=OFF -DJSONCPP_WITH_EXAMPLE=OFF -DBUILD_SHARED_LIB=OFF
+cmake .. -DCMAKE_INSTALL_PREFIX=./install -DJSONCPP_WITH_TESTS=OFF -DJSONCPP_WITH_POST_BUILD_UNITTEST=OFF -DJSONCPP_WITH_EXAMPLE=OFF -DBUILD_SHARED_LIBS=OFF
 make -j8
 make install
 

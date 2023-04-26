@@ -3,6 +3,7 @@
 //
 #include <cstdio>
 #include <fstream>
+#include <memory>
 
 #include "glog/logging.h"
 #include "json/json.h"
@@ -28,7 +29,7 @@ int main(int argc, char **argv) {
 
     Json::Value config;
     ifs >> config;
-    std::unique_ptr<App> app = std::make_unique<RTSPDemo>();
+    std::unique_ptr<App> app(new RTSPDemo);
     if (!app->Init(config)) {
         LOG(ERROR) << "Init app failed!";
         return -1;
