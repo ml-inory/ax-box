@@ -8,6 +8,7 @@
 #include "glog/logging.h"
 #include "json/json.h"
 #include "apps/rtsp_demo.h"
+#include "apps/detect_demo.h"
 
 int main(int argc, char **argv) {
     FLAGS_logtostderr = 1;
@@ -29,7 +30,7 @@ int main(int argc, char **argv) {
 
     Json::Value config;
     ifs >> config;
-    std::unique_ptr<App> app(new RTSPDemo);
+    std::unique_ptr<App> app(new DetectDemo);
     if (!app->Init(config)) {
         LOG(ERROR) << "Init app failed!";
         return -1;

@@ -19,7 +19,7 @@ public:
 
     bool Init(const std::string& model_path) override;
 
-    bool Run(const cv::Mat& img, std::vector<Blob>& outputs) override;
+    bool Run(const cv::Mat& img, std::vector<ax::Blob>& outputs, float* mean_vals, float* std_vals, bool bgr2rgb) override;
 
     void Release() override;
 

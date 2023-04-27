@@ -15,23 +15,33 @@ typedef struct {
     int input_h;
     float score_thresh;
     float nms_thresh;
+    int num_classes;
+    std::vector<float> mean_vals;
+    std::vector<float> std_vals;
+    std::vector<int> want_classes;
+    std::vector<std::vector<std::vector<int>>> anchors;
 } YOLOV5_Config;
 
 class Yolov5s : public ModelBase {
 public:
     Yolov5s(const YOLOV5_Config& config):
-            m_config(config) {
+        ModelBase(),
+        m_config(config) {
 
     }
 
     ~Yolov5s() = default;
 
-    bool Run(const cv::Mat& img, void* result) override {
+    bool Run(const cv::Mat& img, void* result) override;
 
-    }
+private:
+    cv::Mat preprocess(const cv::Mat& img);
+    void postprocess(const std::vector<ax::Blob>& output_blobs, std::vector<DetectResult>& result);
+    void decodeResult(std::vector<DetectResult>& result, const ax::Blob& data, int stride, std::vector<std::vector<int>> anchors, float scoreThresh, int frameWidth, int frameHeight);
 
 private:
     YOLOV5_Config m_config;
+    int m_frame_width, m_frame_height;
 };
 
 #endif //AX_BOX_YOLOV5S_H

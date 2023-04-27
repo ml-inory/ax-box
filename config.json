@@ -1,4 +1,5 @@
 {
   "rtsp_url": "10.153.129.209.mp4",
-  "rtmp_url": "rtmp://localhost:1935/live/test"
+  "rtmp_url": "rtmp://localhost:1935/live/test",
+  "model_path": "yolov5s.param"
 }

@@ -38,13 +38,23 @@ bool BackendNCNN::Init(const std::string& model_path) {
  * @param p_outputBlobs 输出数据
  * @return
  */
-bool BackendNCNN::Run(const cv::Mat& img, std::vector<Blob>& outputs) {
+bool BackendNCNN::Run(const cv::Mat& img, std::vector<ax::Blob>& outputs, float* mean_vals, float* std_vals, bool bgr2rgb) {
+    if (img.empty()) {
+        LOG(ERROR) << "image is empty!";
+        return false;
+    }
+
     ncnn::Mat in;
-    in = ncnn::Mat::from_pixels(img.data, ncnn::Mat::PIXEL_BGR, img.cols, img.rows);
+    if (bgr2rgb) {
+        in = ncnn::Mat::from_pixels(img.data, ncnn::Mat::PIXEL_RGB, img.cols, img.rows);
+    } else {
+        in = ncnn::Mat::from_pixels(img.data, ncnn::Mat::PIXEL_BGR, img.cols, img.rows);
+    }
+    in.substract_mean_normalize(mean_vals, std_vals);
 
     auto ex = net.create_extractor();
     ex.set_light_mode(true);
-    ex.set_num_threads(4);
+//    ex.set_num_threads(1);
 
     if (0 != ex.input(0, in)) {
         return false;

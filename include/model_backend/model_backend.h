@@ -9,6 +9,7 @@
 #include <memory>
 #include "opencv2/core.hpp"
 #include "blob.h"
+#include "glog/logging.h"
 
 class ModelBackend {
 public:
@@ -18,7 +19,7 @@ public:
 
     virtual bool Init(const std::string& model_path) = 0;
 
-    virtual bool Run(const cv::Mat& img, std::vector<Blob>& outputs) = 0;
+    virtual bool Run(const cv::Mat& img, std::vector<ax::Blob>& outputs, float* mean_vals, float* std_vals, bool bgr2rgb) = 0;
 
     virtual void Release() = 0;
 

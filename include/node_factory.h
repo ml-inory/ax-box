@@ -10,7 +10,8 @@
 
 enum NODE_TYPE_E {
     NODE_RTSP_PULL = 0,
-    NODE_RTMP_PUSH
+    NODE_RTMP_PUSH,
+    NODE_DETECT,
 };
 
 std::shared_ptr<Node> CreateNode(NODE_TYPE_E type);
