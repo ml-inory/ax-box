@@ -40,7 +40,7 @@ bool BackendNCNN::Init(const std::string& model_path) {
  */
 bool BackendNCNN::Run(const cv::Mat& img, std::vector<Blob>& outputs) {
     ncnn::Mat in;
-    in = ncnn::Mat::from_pixels_resize(img.data, ncnn::Mat::PIXEL_RGB, img.cols, img.rows, img.cols, img.rows);
+    in = ncnn::Mat::from_pixels(img.data, ncnn::Mat::PIXEL_BGR, img.cols, img.rows);
 
     auto ex = net.create_extractor();
     ex.set_light_mode(true);
