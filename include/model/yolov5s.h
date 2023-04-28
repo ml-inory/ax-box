@@ -36,8 +36,8 @@ public:
 
 private:
     cv::Mat preprocess(const cv::Mat& img);
-    void postprocess(const std::vector<ax::Blob>& output_blobs, std::vector<DetectResult>& result);
-    void decodeResult(std::vector<DetectResult>& result, const ax::Blob& data, int stride, std::vector<std::vector<int>> anchors, float scoreThresh, int frameWidth, int frameHeight);
+    void postprocess(const std::vector<ax::Blob>& output_blobs, const cv::Mat& img, std::vector<DetectResult>& result);
+    void decodeResult(std::vector<DetectResult>& result, const ax::Blob& data, int stride, std::vector<std::vector<int>> anchors, float scoreThresh);
 
 private:
     YOLOV5_Config m_config;

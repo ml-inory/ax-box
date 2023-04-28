@@ -21,7 +21,7 @@ std::shared_ptr<ModelBase> CreateModel(MODEL_TYPE_E type) {
             config.anchors = {{{10, 13}, {16, 30}, {33, 23}},
                               {{30, 61}, {62, 45}, {59, 119}},
                               {{116, 90}, {156, 198}, {373, 326}}};
-//            config.want_classes = {0};
+            config.want_classes = {0};
             return std::shared_ptr<ModelBase>(new Yolov5s(config));
         }
 

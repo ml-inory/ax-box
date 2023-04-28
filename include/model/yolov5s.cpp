@@ -98,7 +98,7 @@ inline float sigmoid(float x) {
 
 void
 Yolov5s::decodeResult(std::vector<DetectResult> &result, const ax::Blob &data, int stride, vector<vector<int>> anchors,
-                      float scoreThresh, int frameWidth, int frameHeight) {
+                      float scoreThresh) {
     int anchor_num = anchors.size();
     int slice_len = data.channel / anchor_num;
     int num_classes = slice_len - 5;
@@ -109,16 +109,14 @@ Yolov5s::decodeResult(std::vector<DetectResult> &result, const ax::Blob &data, i
     for (int c = 0; c < anchor_num; c++) {
         ptr = data.data + c * slice_len * grid_w * grid_h;
         for (int h = 0; h < grid_h; h++) {
-            for (int w = 0; w < grid_w; w++) {
+            for (int w = 0; w < grid_w; w++, ptr++) {
                 float score = sigmoid(ptr[4 * grid_w * grid_h]);
                 if (score >= scoreThresh) {
                     vector<float> det(6);
-                    det[1] = (sigmoid(ptr[0]) * 2 - 0.5f + w) * stride * frameWidth * 1.0f /
-                             m_config.input_w; //center_x
-                    det[2] = (sigmoid(ptr[grid_w * grid_h]) * 2 - 0.5f + h) * stride * frameHeight * 1.0f /
-                             m_config.input_h; //center_y
-                    det[3] = powf((sigmoid(ptr[2]) * 2), 2) * anchors[c][0] * frameWidth * 1.0f / m_config.input_w; //w
-                    det[4] = powf((sigmoid(ptr[3]) * 2), 2) * anchors[c][1] * frameHeight * 1.0f / m_config.input_h; //h
+                    det[1] = (sigmoid(ptr[0]) * 2 - 0.5f + w) * stride; //center_x
+                    det[2] = (sigmoid(ptr[grid_w * grid_h]) * 2 - 0.5f + h) * stride; //center_y
+                    det[3] = powf((sigmoid(ptr[2 * grid_w * grid_h]) * 2), 2) * anchors[c][0]; //w
+                    det[4] = powf((sigmoid(ptr[3 * grid_w * grid_h]) * 2), 2) * anchors[c][1]; //h
 
                     det[1] = det[1] - det[3] / 2; //left
                     det[2] = det[2] - det[4] / 2; //top
@@ -126,7 +124,7 @@ Yolov5s::decodeResult(std::vector<DetectResult> &result, const ax::Blob &data, i
                     det[4] = det[2] + det[4]; //bottom
 
                     for (int i = 5; i < num_classes + 5; i++) {
-                        float conf = sigmoid(ptr[i]);
+                        float conf = sigmoid(ptr[i * grid_w * grid_h]);
                         if (conf * score > det[0]) {
                             det[0] = conf * score; //score
                             det[5] = i - 5; //class_id
@@ -138,8 +136,7 @@ Yolov5s::decodeResult(std::vector<DetectResult> &result, const ax::Blob &data, i
                         res.class_id = (int) det[5];
                         res.class_name = COCO_NAMES[res.class_id];
                         res.score = det[0];
-                        res.bbox = cv::Rect(det[1], det[2], det[3] - det[1], det[4] - det[2]) &
-                                   cv::Rect(0, 0, frameWidth, frameHeight);
+                        res.bbox = cv::Rect(det[1], det[2], det[3] - det[1], det[4] - det[2]);
                         if (m_config.want_classes.size() > 0) {
                             for (const auto i: m_config.want_classes) {
                                 if (i == (int) det[5]) {
@@ -157,7 +154,7 @@ Yolov5s::decodeResult(std::vector<DetectResult> &result, const ax::Blob &data, i
     }
 }
 
-void letterbox(cv::Mat src, cv::Mat &dst, int letterbox_cols, int letterbox_rows, bool bgr2rgb = true) {
+void letterbox(cv::Mat src, cv::Mat &dst, int letterbox_cols, int letterbox_rows) {
     /* letterbox process to support different letterbox size */
     float scale_letterbox;
     int resize_rows;
@@ -181,25 +178,36 @@ void letterbox(cv::Mat src, cv::Mat &dst, int letterbox_cols, int letterbox_rows
 
     // Letterbox filling
     cv::copyMakeBorder(src, dst, top, bot, left, right, cv::BORDER_CONSTANT, cv::Scalar(114, 114, 114));
-    if (bgr2rgb) {
-        cv::cvtColor(dst, dst, cv::COLOR_BGR2RGB);
-    }
 }
 
-cv::Mat subtract_mean_normalize(cv::Mat &src, float *mean_vals, float *std_vals) {
-    if (src.empty()) {
-        LOG(ERROR) << "src is empty!";
-        return cv::Mat();
+void scale_back_letterbox(std::vector<DetectResult>& result, const cv::Mat& src, int letterbox_cols, int letterbox_rows) {
+    /* letterbox process to support different letterbox size */
+    float scale_letterbox;
+    int resize_rows;
+    int resize_cols;
+    if ((letterbox_rows * 1.0 / src.rows) < (letterbox_cols * 1.0 / src.cols)) {
+        scale_letterbox = (float) letterbox_rows * 1.0f / (float) src.rows;
+    } else {
+        scale_letterbox = (float) letterbox_cols * 1.0f / (float) src.cols;
     }
-    cv::Mat dst;
-    src.convertTo(dst, CV_32FC3);
-    cv::Scalar mean_scalar(mean_vals[0], mean_vals[1], mean_vals[2]);
-    cv::Scalar std_scalar(std_vals[0], std_vals[1], std_vals[2]);
-    cv::Mat mean_mat(dst.rows, dst.cols, CV_32FC3, mean_scalar);
-    cv::Mat std_mat(dst.rows, dst.cols, CV_32FC3, std_scalar);
-    dst = (dst - mean_mat) / std_mat;
+    resize_cols = int(scale_letterbox * (float) src.cols);
+    resize_rows = int(scale_letterbox * (float) src.rows);
 
-    return dst;
+    int top = (letterbox_rows - resize_rows) / 2;
+    int bot = (letterbox_rows - resize_rows + 1) / 2;
+    int left = (letterbox_cols - resize_cols) / 2;
+    int right = (letterbox_cols - resize_cols + 1) / 2;
+
+    cv::Rect bound(0, 0, src.cols, src.rows);
+    for (auto& res : result) {
+        // adjust offset to original unpadded
+        float x0 = (res.bbox.x - left) / scale_letterbox;
+        float y0 = (res.bbox.y - top) / scale_letterbox;
+        float x1 = (res.bbox.x + res.bbox.width - left) / scale_letterbox;
+        float y1 = (res.bbox.y + res.bbox.height - top) / scale_letterbox;
+
+        res.bbox = cv::Rect(x0, y0, x1 - x0, y1 - y0) & bound;
+    }
 }
 
 bool Yolov5s::Run(const cv::Mat &img, void *result) {
@@ -215,7 +223,7 @@ bool Yolov5s::Run(const cv::Mat &img, void *result) {
         return false;
     }
     auto *pResult = (std::vector<DetectResult> *) result;
-    postprocess(output_blobs, *pResult);
+    postprocess(output_blobs, img, *pResult);
     return true;
 }
 
@@ -225,14 +233,15 @@ cv::Mat Yolov5s::preprocess(const cv::Mat &img) {
     return dst;
 }
 
-void Yolov5s::postprocess(const std::vector<ax::Blob> &output_blobs, std::vector<DetectResult> &result) {
+void Yolov5s::postprocess(const std::vector<ax::Blob> &output_blobs, const cv::Mat& img, std::vector<DetectResult> &result) {
     if (output_blobs.empty()) {
         LOG(ERROR) << "Got no outputs!";
         return;
     }
+    int strides[3] = {8, 16, 32};
     for (int i = 0; i < output_blobs.size(); i++) {
-        decodeResult(result, output_blobs[i], 8 * (i + 1), m_config.anchors[i], m_config.score_thresh, m_frame_width,
-                     m_frame_height);
+        decodeResult(result, output_blobs[i], strides[i], m_config.anchors[i], m_config.score_thresh);
     }
     result = NMS(result, m_config.nms_thresh, m_config.class_agnostic);
+    scale_back_letterbox(result, img, m_config.input_w, m_config.input_h);
 }

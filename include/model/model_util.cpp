@@ -66,7 +66,7 @@ cv::Mat draw_detect_result(const cv::Mat& img, const std::vector<DetectResult>& 
         sprintf(text, "%s %.2f", bbox.class_name.c_str(), bbox.score);
 
         int baseLine = 0;
-        cv::Size label_size = cv::getTextSize(text, cv::FONT_HERSHEY_SIMPLEX, 0.4, 1, &baseLine);
+        cv::Size label_size = cv::getTextSize(text, cv::FONT_HERSHEY_SIMPLEX, 0.5, 1, &baseLine);
 
         int x = bbox.bbox.x;
         int y = bbox.bbox.y - label_size.height - baseLine;
@@ -79,7 +79,7 @@ cv::Mat draw_detect_result(const cv::Mat& img, const std::vector<DetectResult>& 
                       color, -1);
 
         cv::putText(out_img, text, cv::Point(x, y + label_size.height),
-                    cv::FONT_HERSHEY_SIMPLEX, 0.4, cv::Scalar(255, 255, 255));
+                    cv::FONT_HERSHEY_SIMPLEX, 0.5, cv::Scalar(0, 0, 0));
     }
     return out_img;
 }

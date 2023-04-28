@@ -4,6 +4,7 @@
 //
 #include "nodes/DetectNode.h"
 #include "model/model_util.h"
+#include "opencv2/imgproc.hpp"
 
 bool DetectNode::Init(const Json::Value &config) {
     if (!config.isMember("model_path")) {
@@ -37,6 +38,7 @@ void DetectNode::Run() {
     detector->Run(img, &result);
     LOG(INFO) << "Detected " << result.size() << " objs";
     cv::Mat draw_img = draw_detect_result(img, result);
+    cv::resize(draw_img, draw_img, cv::Size(0,0), 0.5, 0.5);
 
     output_queue->Push(std::make_shared<Packet>(draw_img));
 }
